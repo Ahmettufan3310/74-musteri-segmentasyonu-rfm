@@ -21,6 +21,7 @@ Bu sistem; e-ticaret ve perakende işlem kayıtlarını analiz ederek müşteril
 - [Proje Durumu](#-proje-durumu)
 - [Ekip](#-ekip)
 - [Kaynaklar](#-kaynaklar)
+- [Lisans](#-lisans)
 
 ## 📌 Proje Hakkında
 
@@ -170,3 +171,7 @@ streamlit run app/app.py
 2. Hughes, A. M. (1994). *Strategic Database Marketing.* Chicago: Probus Publishing.
 3. MacQueen, J. B. (1967). *Some Methods for Classification and Analysis of Multivariate Observations.* Proc. Fifth Berkeley Symposium, 1, 281–297.
 4. Chen, D. (2015). *Online Retail [Dataset].* UCI Machine Learning Repository.
+
+## 📄 Lisans
+
+Bu proje **MIT Lisansı** altında dağıtılmaktadır. Ayrıntılar için depodaki [LICENSE](LICENSE) dosyasına bakınız.
