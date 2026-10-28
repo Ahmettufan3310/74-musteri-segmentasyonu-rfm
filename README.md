@@ -15,6 +15,7 @@ Bu sistem; e-ticaret ve perakende işlem kayıtlarını analiz ederek müşteril
 - [Sistem Mimarisi](#-sistem-mimarisi)
 - [Veri Seti ve Temizleme](#-veri-seti-ve-temizleme)
 - [RFM ve Segmentler](#-rfm-ve-segmentler)
+- [Kümeleme Sonuçları](#-kümeleme-sonuçları)
 - [Proje Yapısı](#-proje-yapısı)
 - [Kurulum ve Çalıştırma](#-kurulum-ve-çalıştırma)
 - [Proje Durumu](#-proje-durumu)
@@ -62,8 +63,8 @@ CSV  →  Veri Temizleme  →  RFM Çıkarımı  →  Ön İşleme  →  Kümele
 | Temizleme Adımı | Çıkarılan | Kalan Satır |
 |-----------------|:---------:|:-----------:|
 | Başlangıç (ham veri) | — | 541.909 |
-| Müşteri numarası boş kayıtlar | 135.080 | — |
-| İptal/iade faturaları + sıfır/negatif adet–fiyat | — | 397.884 |
+| Müşteri numarası boş kayıtlar | 135.080 | 406.829 |
+| İptal/iade faturaları + sıfır/negatif adet–fiyat | 8.945 | 397.884 |
 | Ürün dışı kodlar (POST, M, C2, DOT, BANK CHARGES, PADS) | 1.547 | 396.337 |
 | Aynı gün tamamı iptal edilen çok büyük siparişlerin asıl satırları | 4 | 396.333 |
 | Birebir yinelenen (kopya) satırlar | 5.187 | 391.146 |
@@ -81,15 +82,29 @@ CSV  →  Veri Temizleme  →  RFM Çıkarımı  →  Ön İşleme  →  Kümele
 | **Frequency (F)** | Müşterinin benzersiz fatura (sipariş) sayısı |
 | **Monetary (M)** | Müşterinin toplam ürün harcaması (Quantity × UnitPrice) |
 
-**Hedeflenen Segmentler** (küme profillerine ve P33/P67 eşiklerine göre kural tabanlı adlandırılır)
+**Belirlenen Segmentler** (kümelerin özgün ölçekteki RFM profillerine göre kural tabanlı adlandırılmıştır)
 
 | Segment | Profil |
 |---------|--------|
-| 🏆 Şampiyonlar / VIP | Yakın zamanda, sık ve çok harcayan müşteriler |
-| 💙 Sadık Müşteriler | Düzenli gelen, harcaması iyi müşteriler |
-| 🌱 Potansiyel Sadıklar | Yakın zamanda gelmiş, sadık olmaya aday müşteriler |
-| ⚠️ Riskli / Terk Etmek Üzere | Eskiden değerli, uzun süredir gelmeyen müşteriler |
-| 😴 Uykudaki Müşteriler | Çok uzun süredir gelmeyen, az aktif müşteriler |
+| 🏆 Şampiyonlar / VIP | Yakın zamanda gelmiş, sık alışveriş yapan ve en çok harcayan müşteriler |
+| 💙 Sadık / Düzenli Müşteriler | Düzenli gelen, orta seviye harcayan güvenilir müşteriler |
+| 🌱 Yeni / Potansiyel Müşteriler | Yakın zamanda gelmiş ancak henüz az alışveriş yapmış müşteriler |
+| 😴 Uykudaki Müşteriler | Uzun süredir alışveriş yapmayan, tek siparişli müşteriler |
+
+## 📈 Kümeleme Sonuçları
+
+Uygun küme sayısı, k=2 ile k=10 arasında **Elbow yöntemi** ve **Silhouette Skoru** birlikte değerlendirilerek belirlenmiştir. Silhouette en yüksek değerine k=2'de ulaşsa da (0,433), iki küme anlamlı pazarlama segmentleri üretmediğinden; istatistiksel skor ile iş açısından yorumlanabilirlik birlikte gözetilerek **k=4** seçilmiştir.
+
+**Model metrikleri:** Silhouette Skoru **0,337** · Davies-Bouldin Endeksi **1,012** (düşük değer daha iyi ayrışma gösterir).
+
+| Segment | Recency (gün) | Frequency | Monetary (TL) | Müşteri Sayısı |
+|---------|:-------------:|:---------:|:-------------:|:--------------:|
+| 🏆 Şampiyonlar / VIP | 8 | 10 | 3.623,5 | 714 |
+| 💙 Sadık / Düzenli Müşteriler | 54 | 4 | 1.320,2 | 1.187 |
+| 🌱 Yeni / Potansiyel Müşteriler | 18 | 2 | 450,3 | 837 |
+| 😴 Uykudaki Müşteriler | 179 | 1 | 292,5 | 1.595 |
+
+> En kalabalık grubun uykudaki müşteriler (1.595) olması, geri kazanım kampanyalarına öncelik verilmesi gerektiğini göstermektedir. Değerler her kümenin medyanıdır.
 
 ## 📁 Proje Yapısı
 
@@ -98,9 +113,11 @@ CSV  →  Veri Temizleme  →  RFM Çıkarımı  →  Ön İşleme  →  Kümele
 ├── notebooks/
 │   ├── 01_veri_eda.ipynb        # Veri temizleme ve keşifçi veri analizi
 │   ├── 02_rfm.ipynb             # RFM hesabı ve ön işleme
-│   └── ...                      # Kümeleme, PCA (geliştiriliyor)
+│   └── 03_kmeans.ipynb          # K-Means kümeleme ve küme sayısı belirleme
 ├── data/
-│   └── rfm_olcekli.csv          # Ön işlenmiş RFM tablosu
+│   ├── rfm_ozgun.csv            # Özgün ölçekli RFM tablosu
+│   ├── rfm_olcekli.csv          # Ölçeklenmiş RFM tablosu
+│   └── kume_sonuclari.csv       # Küme etiketli müşteri tablosu
 ├── app/
 │   └── app.py                   # Streamlit arayüzü (geliştiriliyor)
 ├── requirements.txt
@@ -132,9 +149,9 @@ streamlit run app/app.py
 |-----------|----------|:-----:|
 | İP1 | Literatür taraması ve veri seti temini | ✅ Tamamlandı |
 | İP2 | Keşifçi veri analizi ve veri temizleme | ✅ Tamamlandı |
-| İP3 | RFM hesabı ve ön işleme | 🔄 Devam ediyor |
-| İP4 | K-Means ve küme sayısı belirleme | ⏳ Planlandı |
-| İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | ⏳ Planlandı |
+| İP3 | RFM hesabı ve ön işleme | ✅ Tamamlandı |
+| İP4 | K-Means ve küme sayısı belirleme | ✅ Tamamlandı |
+| İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | 🔄 Devam ediyor |
 | İP6 | PCA ve görselleştirme | ⏳ Planlandı |
 | İP7 | Segment profilleme ve strateji önerileri | ⏳ Planlandı |
 | İP8 | Streamlit arayüzü ve raporlama | ⏳ Planlandı |
