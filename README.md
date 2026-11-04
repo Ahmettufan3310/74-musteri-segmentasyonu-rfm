@@ -165,8 +165,8 @@ streamlit run app/app.py
 | İP2 | Keşifçi veri analizi ve veri temizleme | ✅ Tamamlandı |
 | İP3 | RFM hesabı ve ön işleme | ✅ Tamamlandı |
 | İP4 | K-Means ve küme sayısı belirleme | ✅ Tamamlandı |
-| İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | 🔄 Devam ediyor |
-| İP6 | PCA ve görselleştirme | ⏳ Planlandı |
+| İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | ✅ Tamamlandı |
+| İP6 | PCA ve görselleştirme | 🔄 Devam ediyor |
 | İP7 | Segment profilleme ve strateji önerileri | ⏳ Planlandı |
 | İP8 | Streamlit arayüzü ve raporlama | ⏳ Planlandı |
 
