@@ -107,6 +107,18 @@ Uygun küme sayısı, k=2 ile k=10 arasında **Elbow yöntemi** ve **Silhouette 
 
 > En kalabalık grubun uykudaki müşteriler (1.595) olması, geri kazanım kampanyalarına öncelik verilmesi gerektiğini göstermektedir. Değerler her kümenin medyanıdır.
 
+**Algoritma Karşılaştırması**
+
+Aynı RFM tablosu üzerinde üç kümeleme algoritması uygulanıp Silhouette ve Davies-Bouldin metrikleriyle karşılaştırılmıştır. K-Means, hem en yüksek Silhouette hem de en düşük Davies-Bouldin değerleriyle bu veri seti için en uygun model olarak belirlenmiştir.
+
+| Algoritma | Küme Sayısı | Silhouette | Davies-Bouldin |
+|-----------|:-----------:|:----------:|:--------------:|
+| **K-Means** | 4 | **0,337** | **1,012** |
+| Hiyerarşik Kümeleme | 4 | 0,291 | 1,036 |
+| DBSCAN | 2 | 0,296 | 1,062 |
+
+> DBSCAN'in yalnızca iki geniş küme üretmesi, RFM verisinin keskin yoğunluk sınırları içermeyen sürekli yapısından kaynaklanmaktadır.
+
 ## 📁 Proje Yapısı
 
 ```
@@ -114,7 +126,8 @@ Uygun küme sayısı, k=2 ile k=10 arasında **Elbow yöntemi** ve **Silhouette 
 ├── notebooks/
 │   ├── 01_veri_eda.ipynb        # Veri temizleme ve keşifçi veri analizi
 │   ├── 02_rfm.ipynb             # RFM hesabı ve ön işleme
-│   └── 03_kmeans.ipynb          # K-Means kümeleme ve küme sayısı belirleme
+│   ├── 03_kmeans.ipynb          # K-Means kümeleme ve küme sayısı belirleme
+│   └── 04_alternatif_kumeleme.ipynb  # Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma
 ├── data/
 │   ├── rfm_ozgun.csv            # Özgün ölçekli RFM tablosu
 │   ├── rfm_olcekli.csv          # Ölçeklenmiş RFM tablosu
