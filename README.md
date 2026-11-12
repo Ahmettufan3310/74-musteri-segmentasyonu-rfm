@@ -119,6 +119,10 @@ Aynı RFM tablosu üzerinde üç kümeleme algoritması uygulanıp Silhouette ve
 
 > DBSCAN'in yalnızca iki geniş küme üretmesi, RFM verisinin keskin yoğunluk sınırları içermeyen sürekli yapısından kaynaklanmaktadır.
 
+**Görselleştirme (PCA)**
+
+Üç boyutlu RFM uzayı, PCA ile iki bileşene indirgenerek segmentler tek bir grafikte görselleştirilmiştir. İlk iki bileşen toplam varyansın **%94'ünü** (PC1 %75,3 + PC2 %18,7) açıklamaktadır; bu, iki boyutlu görünümün veriyi büyük ölçüde temsil ettiğini gösterir. Grafikte dört segmentin birbirinden ayrı bölgelerde toplanması, kümelemenin anlamlılığını görsel olarak doğrulamaktadır.
+
 ## 📁 Proje Yapısı
 
 ```
@@ -127,7 +131,8 @@ Aynı RFM tablosu üzerinde üç kümeleme algoritması uygulanıp Silhouette ve
 │   ├── 01_veri_eda.ipynb        # Veri temizleme ve keşifçi veri analizi
 │   ├── 02_rfm.ipynb             # RFM hesabı ve ön işleme
 │   ├── 03_kmeans.ipynb          # K-Means kümeleme ve küme sayısı belirleme
-│   └── 04_alternatif_kumeleme.ipynb  # Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma
+│   ├── 04_alternatif_kumeleme.ipynb  # Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma
+│   └── 05_pca_gorsellestirme.ipynb    # PCA ile boyut indirgeme ve segment görselleştirme
 ├── data/
 │   ├── rfm_ozgun.csv            # Özgün ölçekli RFM tablosu
 │   ├── rfm_olcekli.csv          # Ölçeklenmiş RFM tablosu
@@ -166,8 +171,8 @@ streamlit run app/app.py
 | İP3 | RFM hesabı ve ön işleme | ✅ Tamamlandı |
 | İP4 | K-Means ve küme sayısı belirleme | ✅ Tamamlandı |
 | İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | ✅ Tamamlandı |
-| İP6 | PCA ve görselleştirme | 🔄 Devam ediyor |
-| İP7 | Segment profilleme ve strateji önerileri | ⏳ Planlandı |
+| İP6 | PCA ve görselleştirme | ✅ Tamamlandı |
+| İP7 | Segment profilleme ve strateji önerileri | 🔄 Devam ediyor |
 | İP8 | Streamlit arayüzü ve raporlama | ⏳ Planlandı |
 
 ## 👥 Ekip
