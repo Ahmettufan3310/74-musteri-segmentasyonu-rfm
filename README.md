@@ -123,6 +123,28 @@ Aynı RFM tablosu üzerinde üç kümeleme algoritması uygulanıp Silhouette ve
 
 Üç boyutlu RFM uzayı, PCA ile iki bileşene indirgenerek segmentler tek bir grafikte görselleştirilmiştir. İlk iki bileşen toplam varyansın **%94'ünü** (PC1 %75,3 + PC2 %18,7) açıklamaktadır; bu, iki boyutlu görünümün veriyi büyük ölçüde temsil ettiğini gösterir. Grafikte dört segmentin birbirinden ayrı bölgelerde toplanması, kümelemenin anlamlılığını görsel olarak doğrulamaktadır.
 
+**Segment Profilleri ve Ciro Payı**
+
+Segmentlerin müşteri sayısı içindeki payı ile toplam ciro içindeki payı karşılaştırıldığında, değerin birkaç segmentte yoğunlaştığı görülmektedir:
+
+| Segment | Müşteri Oranı | Ciro Payı |
+|---------|:-------------:|:---------:|
+| 🏆 Şampiyonlar / VIP | %16,5 | **%65,1** |
+| 💙 Sadık / Düzenli Müşteriler | %27,4 | %23,3 |
+| 🌱 Yeni / Potansiyel Müşteriler | %19,3 | %5,2 |
+| 😴 Uykudaki Müşteriler | %36,8 | %6,4 |
+
+> VIP müşteriler, müşteri tabanının yalnızca %16,5'ini oluşturmasına rağmen toplam cironun %65'ini sağlamaktadır. VIP ve sadık müşteriler birlikte müşterilerin %44'ü, cironun ise %88'idir.
+
+**Pazarlama Önerileri**
+
+| Segment | Önerilen Aksiyon |
+|---------|------------------|
+| 🏆 Şampiyonlar / VIP | Sadakat programı, özel indirimler ve yeni ürünlere erken erişim; bu müşterileri elde tutmak birinci önceliktir. |
+| 💙 Sadık / Düzenli Müşteriler | Çapraz satış ve üst segment ürün önerileri; düzenli kampanyalarla VIP seviyesine taşıma. |
+| 🌱 Yeni / Potansiyel Müşteriler | Hoş geldin kampanyası ve ikinci alışverişe özel indirim; tekrar alım alışkanlığı kazandırma. |
+| 😴 Uykudaki Müşteriler | Geri kazanım e-postası ve kişisel indirim kuponu; tepki vermeyenler için düşük maliyetli iletişim. |
+
 ## 📁 Proje Yapısı
 
 ```
@@ -132,11 +154,13 @@ Aynı RFM tablosu üzerinde üç kümeleme algoritması uygulanıp Silhouette ve
 │   ├── 02_rfm.ipynb             # RFM hesabı ve ön işleme
 │   ├── 03_kmeans.ipynb          # K-Means kümeleme ve küme sayısı belirleme
 │   ├── 04_alternatif_kumeleme.ipynb  # Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma
-│   └── 05_pca_gorsellestirme.ipynb    # PCA ile boyut indirgeme ve segment görselleştirme
+│   ├── 05_pca_gorsellestirme.ipynb    # PCA ile boyut indirgeme ve segment görselleştirme
+│   └── 06_segment_profilleme.ipynb    # Segment profilleri ve pazarlama önerileri
 ├── data/
 │   ├── rfm_ozgun.csv            # Özgün ölçekli RFM tablosu
 │   ├── rfm_olcekli.csv          # Ölçeklenmiş RFM tablosu
-│   └── kume_sonuclari.csv       # Küme etiketli müşteri tablosu
+│   ├── kume_sonuclari.csv       # Küme etiketli müşteri tablosu
+│   └── segment_sonuclari.csv    # Segment adı eklenmiş müşteri tablosu
 ├── app/
 │   └── app.py                   # Streamlit arayüzü (geliştiriliyor)
 ├── requirements.txt
@@ -172,8 +196,8 @@ streamlit run app/app.py
 | İP4 | K-Means ve küme sayısı belirleme | ✅ Tamamlandı |
 | İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | ✅ Tamamlandı |
 | İP6 | PCA ve görselleştirme | ✅ Tamamlandı |
-| İP7 | Segment profilleme ve strateji önerileri | 🔄 Devam ediyor |
-| İP8 | Streamlit arayüzü ve raporlama | ⏳ Planlandı |
+| İP7 | Segment profilleme ve strateji önerileri | ✅ Tamamlandı |
+| İP8 | Streamlit arayüzü ve raporlama | 🔄 Devam ediyor |
 
 ## 👥 Ekip
 
