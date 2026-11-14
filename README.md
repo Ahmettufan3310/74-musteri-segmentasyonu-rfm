@@ -219,11 +219,39 @@ streamlit run app/app.py
 
 ## 📚 Kaynaklar
 
-1. Chen, D., Sain, S. L. & Guo, K. (2012). *Data Mining for the Online Retail Industry: A Case Study of RFM Model-Based Customer Segmentation.* Journal of Database Marketing & Customer Strategy Management, 19(3), 197–208.
-2. Hughes, A. M. (1994). *Strategic Database Marketing.* Chicago: Probus Publishing.
-3. MacQueen, J. B. (1967). *Some Methods for Classification and Analysis of Multivariate Observations.* Proc. Fifth Berkeley Symposium, 1, 281–297.
-4. Chen, D. (2015). *Online Retail [Dataset].* UCI Machine Learning Repository.
-5. Breiman, L. (2001). *Random Forests.* Machine Learning, 45(1), 5–32.
+**RFM ve Veri Seti**
+
+1. Hughes, A. M. (1994). *Strategic Database Marketing.* Chicago: Probus Publishing.
+2. Chen, D., Sain, S. L. & Guo, K. (2012). *Data Mining for the Online Retail Industry: A Case Study of RFM Model-Based Customer Segmentation Using Data Mining.* Journal of Database Marketing & Customer Strategy Management, 19(3), 197–208.
+3. Chen, D. (2015). *Online Retail [Dataset].* UCI Machine Learning Repository. https://doi.org/10.24432/C5BW33
+
+**Kümeleme Algoritmaları**
+
+4. MacQueen, J. B. (1967). *Some Methods for Classification and Analysis of Multivariate Observations.* Proc. Fifth Berkeley Symposium on Mathematical Statistics and Probability, 1, 281–297.
+5. Arthur, D. & Vassilvitskii, S. (2007). *k-means++: The Advantages of Careful Seeding.* Proc. 18th ACM-SIAM Symposium on Discrete Algorithms (SODA), 1027–1035.
+6. Ward, J. H. (1963). *Hierarchical Grouping to Optimize an Objective Function.* Journal of the American Statistical Association, 58(301), 236–244.
+7. Ester, M., Kriegel, H.-P., Sander, J. & Xu, X. (1996). *A Density-Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise.* Proc. 2nd Int. Conf. on Knowledge Discovery and Data Mining (KDD-96), 226–231.
+
+**Model Değerlendirme**
+
+8. Thorndike, R. L. (1953). *Who Belongs in the Family?* Psychometrika, 18(4), 267–276. (Elbow yöntemi)
+9. Rousseeuw, P. J. (1987). *Silhouettes: A Graphical Aid to the Interpretation and Validation of Cluster Analysis.* Journal of Computational and Applied Mathematics, 20, 53–65.
+10. Davies, D. L. & Bouldin, D. W. (1979). *A Cluster Separation Measure.* IEEE Transactions on Pattern Analysis and Machine Intelligence, PAMI-1(2), 224–227.
+
+**Boyut İndirgeme**
+
+11. Pearson, K. (1901). *On Lines and Planes of Closest Fit to Systems of Points in Space.* Philosophical Magazine, 2(11), 559–572.
+12. Jolliffe, I. T. (2002). *Principal Component Analysis* (2. baskı). New York: Springer.
+
+**Tahmin Modeli**
+
+13. Breiman, L. (2001). *Random Forests.* Machine Learning, 45(1), 5–32.
+
+**Yazılım Kütüphaneleri**
+
+14. Pedregosa, F. vd. (2011). *Scikit-learn: Machine Learning in Python.* Journal of Machine Learning Research, 12, 2825–2830.
+15. McKinney, W. (2010). *Data Structures for Statistical Computing in Python.* Proc. 9th Python in Science Conference, 56–61.
+16. Hunter, J. D. (2007). *Matplotlib: A 2D Graphics Environment.* Computing in Science & Engineering, 9(3), 90–95.
 
 ## 📄 Lisans
 
