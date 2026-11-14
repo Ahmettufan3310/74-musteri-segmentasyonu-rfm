@@ -37,13 +37,15 @@ Amaç; yalnızca bir kümeleme algoritması çalıştırmak değil, verinin kura
 - **Objektif Model Değerlendirme:** Elbow yöntemi, Silhouette Skoru ve Davies-Bouldin Endeksi ile optimum küme sayısının ve en uygun modelin belirlenmesi.
 - **Boyut İndirgeme ve Görselleştirme:** PCA ile segmentlerin 2B/3B görselleştirilmesi.
 - **Kural Tabanlı Segment Profilleme:** Kümelerin iş dünyası segmentlerine (VIP, Sadık, Riskli…) dönüştürülmesi ve pazarlama önerileri.
-- **Etkileşimli Arayüz:** CSV yükleme, müşteri sorgulama ve sonuç indirme sunan Streamlit paneli.
+- **Segment Geçişi Analizi:** Verinin iki döneme bölünerek müşterilerin segmentler arasındaki hareketinin (ör. Sadık → Uykuda) incelenmesi.
+- **Kayıp Müşteri (Churn) Tahmini:** Random Forest ile alışverişi bırakma riski yüksek müşterilerin önceden belirlenmesi.
+- **Etkileşimli Arayüz:** CSV yükleme, müşteri sorgulama (segment ve churn riski) ve sonuç indirme sunan Streamlit paneli.
 
 ## 🧭 Sistem Mimarisi
 
 ```
-CSV  →  Veri Temizleme  →  RFM Çıkarımı  →  Ön İşleme  →  Kümeleme  →  Değerlendirme  →  PCA  →  Segment Profili  →  Streamlit
-                                            (log + scale)   (3 algoritma)  (2 metrik)              (strateji önerileri)
+CSV  →  Veri Temizleme  →  RFM Çıkarımı  →  Ön İşleme  →  Kümeleme  →  Değerlendirme  →  PCA  →  Segment Profili  →  Segment Geçişi  →  Churn Tahmini  →  Streamlit
+                                            (log + scale)   (3 algoritma)  (2 metrik)              (strateji önerileri)   (2 dönem)        (Random Forest)
 ```
 
 | Katman | Açıklama |
@@ -55,6 +57,8 @@ CSV  →  Veri Temizleme  →  RFM Çıkarımı  →  Ön İşleme  →  Kümele
 | **Değerlendirme** | Elbow, Silhouette, Davies-Bouldin ile model kıyası |
 | **Görselleştirme** | PCA ile boyut indirgeme ve küme grafikleri |
 | **Profilleme** | Kümelerin iş segmentlerine dönüştürülmesi ve strateji önerileri |
+| **Segment Geçişi** | İki dönem arasında müşterilerin segment değişimlerinin incelenmesi |
+| **Churn Tahmini** | Alışverişi bırakma riski taşıyan müşterilerin sınıflandırma modeliyle tahmini |
 | **Arayüz** | Streamlit tabanlı etkileşimli panel |
 
 ## 📊 Veri Seti ve Temizleme
@@ -155,12 +159,15 @@ Segmentlerin müşteri sayısı içindeki payı ile toplam ciro içindeki payı 
 │   ├── 03_kmeans.ipynb          # K-Means kümeleme ve küme sayısı belirleme
 │   ├── 04_alternatif_kumeleme.ipynb  # Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma
 │   ├── 05_pca_gorsellestirme.ipynb    # PCA ile boyut indirgeme ve segment görselleştirme
-│   └── 06_segment_profilleme.ipynb    # Segment profilleri ve pazarlama önerileri
+│   ├── 06_segment_profilleme.ipynb    # Segment profilleri ve pazarlama önerileri
+│   ├── 07_segment_gecisi.ipynb        # İki dönem arası segment geçişleri (planlanıyor)
+│   └── 08_churn_tahmini.ipynb         # Kayıp müşteri tahmini (planlanıyor)
 ├── data/
 │   ├── rfm_ozgun.csv            # Özgün ölçekli RFM tablosu
 │   ├── rfm_olcekli.csv          # Ölçeklenmiş RFM tablosu
 │   ├── kume_sonuclari.csv       # Küme etiketli müşteri tablosu
-│   └── segment_sonuclari.csv    # Segment adı eklenmiş müşteri tablosu
+│   ├── segment_sonuclari.csv    # Segment adı eklenmiş müşteri tablosu
+│   └── segment_gecisleri.csv    # Dönemler arası segment geçişleri (planlanıyor)
 ├── app/
 │   └── app.py                   # Streamlit arayüzü (geliştiriliyor)
 ├── requirements.txt
@@ -197,15 +204,18 @@ streamlit run app/app.py
 | İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | ✅ Tamamlandı |
 | İP6 | PCA ve görselleştirme | ✅ Tamamlandı |
 | İP7 | Segment profilleme ve strateji önerileri | ✅ Tamamlandı |
-| İP8 | Streamlit arayüzü ve raporlama | 🔄 Devam ediyor |
+| İP8 | Segment geçişi analizi (iki dönem karşılaştırması) | 🔄 Devam ediyor |
+| İP9 | Kayıp müşteri (churn) tahmini | ⏳ Planlandı |
+| İP10 | Streamlit arayüzü | ⏳ Planlandı |
+| İP11 | Final rapor ve sunum | ⏳ Planlandı |
 
 ## 👥 Ekip
 
 | Üye | Sorumluluk Alanı |
 |-----|------------------|
-| **Ahmet Furkan Tufan** | K-Means modeli, segment profilleme |
-| **Mehmetali Murt** | Veri temini, veri temizleme, alternatif kümeleme modelleri |
-| **Muhammed Yılmaz** | RFM ve ön işleme, PCA görselleştirme, Streamlit arayüzü |
+| **Ahmet Furkan Tufan** | K-Means modeli, segment profilleme, Streamlit arayüzü |
+| **Mehmetali Murt** | Veri temini, veri temizleme, alternatif kümeleme modelleri, churn tahmini |
+| **Muhammed Yılmaz** | RFM ve ön işleme, PCA görselleştirme, segment geçişi analizi |
 
 ## 📚 Kaynaklar
 
@@ -213,6 +223,7 @@ streamlit run app/app.py
 2. Hughes, A. M. (1994). *Strategic Database Marketing.* Chicago: Probus Publishing.
 3. MacQueen, J. B. (1967). *Some Methods for Classification and Analysis of Multivariate Observations.* Proc. Fifth Berkeley Symposium, 1, 281–297.
 4. Chen, D. (2015). *Online Retail [Dataset].* UCI Machine Learning Repository.
+5. Breiman, L. (2001). *Random Forests.* Machine Learning, 45(1), 5–32.
 
 ## 📄 Lisans
 
