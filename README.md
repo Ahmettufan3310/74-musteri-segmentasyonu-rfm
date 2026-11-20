@@ -149,6 +149,19 @@ Segmentlerin müşteri sayısı içindeki payı ile toplam ciro içindeki payı 
 | 🌱 Yeni / Potansiyel Müşteriler | Hoş geldin kampanyası ve ikinci alışverişe özel indirim; tekrar alım alışkanlığı kazandırma. |
 | 😴 Uykudaki Müşteriler | Geri kazanım e-postası ve kişisel indirim kuponu; tepki vermeyenler için düşük maliyetli iletişim. |
 
+**Segment Geçişi Analizi**
+
+Veri iki döneme ayrılmıştır: **1. dönem** Aralık 2010 – Mayıs 2011 (2.715 müşteri), **2. dönem** Haziran – Aralık 2011 (3.540 müşteri). İki dönemin karşılaştırılabilir olması için ölçekleyici ve K-Means modeli 1. dönemde eğitilmiş, aynı model 2. döneme uygulanmıştır. Tabloda satırlar 1. dönemdeki segmenti, sütunlar 2. dönemdeki durumu gösterir (her satır %100):
+
+| 1. Dönem \ 2. Dönem | VIP | Sadık | Yeni / Potansiyel | Uykuda | Alışveriş yok |
+|---------|:---:|:-----:|:-----------------:|:------:|:-------------:|
+| 🏆 VIP | **%72,6** | %16,5 | %4,1 | %3,9 | %2,8 |
+| 💙 Sadık | %22,1 | %32,7 | %14,4 | %12,3 | %18,6 |
+| 🌱 Yeni / Potansiyel | %10,7 | %23,0 | %19,5 | %23,1 | %23,7 |
+| 😴 Uykuda | %4,6 | %12,9 | %14,4 | %20,8 | **%47,2** |
+
+> VIP müşterilerin %72,6'sı segmentini korurken, uykudaki müşterilerin %47,2'si 2. dönemde hiç alışveriş yapmamıştır. Sadık müşterilerin %22,1'inin VIP'e yükselmesi, sadık segmente yönelik kampanyaların potansiyelini göstermektedir. 1. dönemdeki müşterilerin %29'u (793 kişi) 2. dönemde geri dönmemiş, 2. dönemde ise 1.618 yeni müşteri kazanılmıştır.
+
 ## 📁 Proje Yapısı
 
 ```
@@ -160,14 +173,15 @@ Segmentlerin müşteri sayısı içindeki payı ile toplam ciro içindeki payı 
 │   ├── 04_alternatif_kumeleme.ipynb  # Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma
 │   ├── 05_pca_gorsellestirme.ipynb    # PCA ile boyut indirgeme ve segment görselleştirme
 │   ├── 06_segment_profilleme.ipynb    # Segment profilleri ve pazarlama önerileri
-│   ├── 07_segment_gecisi.ipynb        # İki dönem arası segment geçişleri (planlanıyor)
+│   ├── 07_segment_gecisi.ipynb        # İki dönem arası segment geçişleri
 │   └── 08_churn_tahmini.ipynb         # Kayıp müşteri tahmini (planlanıyor)
 ├── data/
 │   ├── rfm_ozgun.csv            # Özgün ölçekli RFM tablosu
 │   ├── rfm_olcekli.csv          # Ölçeklenmiş RFM tablosu
 │   ├── kume_sonuclari.csv       # Küme etiketli müşteri tablosu
 │   ├── segment_sonuclari.csv    # Segment adı eklenmiş müşteri tablosu
-│   └── segment_gecisleri.csv    # Dönemler arası segment geçişleri (planlanıyor)
+│   ├── segment_gecisleri.csv    # Müşteri bazında dönemler arası segment geçişleri
+│   └── gecis_matrisi.csv        # Segment geçiş oranları (%)
 ├── app/
 │   └── app.py                   # Streamlit arayüzü (geliştiriliyor)
 ├── requirements.txt
@@ -204,8 +218,8 @@ streamlit run app/app.py
 | İP5 | Hiyerarşik Kümeleme, DBSCAN ve karşılaştırma | ✅ Tamamlandı |
 | İP6 | PCA ve görselleştirme | ✅ Tamamlandı |
 | İP7 | Segment profilleme ve strateji önerileri | ✅ Tamamlandı |
-| İP8 | Segment geçişi analizi (iki dönem karşılaştırması) | 🔄 Devam ediyor |
-| İP9 | Kayıp müşteri (churn) tahmini | ⏳ Planlandı |
+| İP8 | Segment geçişi analizi (iki dönem karşılaştırması) | ✅ Tamamlandı |
+| İP9 | Kayıp müşteri (churn) tahmini | 🔄 Devam ediyor |
 | İP10 | Streamlit arayüzü | ⏳ Planlandı |
 | İP11 | Final rapor ve sunum | ⏳ Planlandı |
 
