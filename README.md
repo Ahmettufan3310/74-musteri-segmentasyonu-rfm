@@ -162,6 +162,28 @@ Veri iki döneme ayrılmıştır: **1. dönem** Aralık 2010 – Mayıs 2011 (2.
 
 > VIP müşterilerin %72,6'sı segmentini korurken, uykudaki müşterilerin %47,2'si 2. dönemde hiç alışveriş yapmamıştır. Sadık müşterilerin %22,1'inin VIP'e yükselmesi, sadık segmente yönelik kampanyaların potansiyelini göstermektedir. 1. dönemdeki müşterilerin %29'u (793 kişi) 2. dönemde geri dönmemiş, 2. dönemde ise 1.618 yeni müşteri kazanılmıştır.
 
+**Kayıp Müşteri (Churn) Tahmini**
+
+Veri 9 Eylül 2011 tarihinden ikiye ayrılmıştır: müşteri özellikleri ilk 9 aydan çıkarılmış, son 3 ayda hiç alışveriş yapmayan müşteriler **churn** olarak etiketlenmiştir (3.359 müşterinin %43'ü). RFM değerlerine ek olarak ürün çeşitliliği, ortalama sepet tutarı ve müşteri süresi özellikleri kullanılmıştır. Veri %75 eğitim / %25 test olarak ayrılmıştır.
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|-------|:--------:|:---------:|:------:|:--:|:-------:|
+| Lojistik Regresyon | 0,670 | 0,587 | 0,778 | 0,669 | 0,735 |
+| **Random Forest** (max_depth=5) | **0,676** | 0,596 | 0,758 | 0,667 | **0,744** |
+
+Yapılan deneylerde 60, 90 ve 120 günlük churn tanımları karşılaştırılmış (ROC-AUC 0,731–0,752) ve işletme açısından dengeli olan **90 gün** seçilmiştir. Ağaç derinliği denemesinde derinlik arttıkça eğitim doğruluğu %100'e çıkarken test doğruluğu artmamış (aşırı öğrenme); en iyi sonuç **max_depth=5** ile alınmıştır. Modelde en etkili özellikler sırasıyla Frequency, Monetary ve Recency'dir.
+
+Eğitilen model tüm müşterilere uygulanarak her müşteriye churn olasılığı ve risk seviyesi atanmıştır:
+
+| Segment | Düşük Risk | Orta Risk | Yüksek Risk |
+|---------|:----------:|:---------:|:-----------:|
+| 🏆 VIP | **%99,4** | %0,6 | %0,0 |
+| 💙 Sadık | %68,4 | %31,1 | %0,5 |
+| 🌱 Yeni / Potansiyel | %17,4 | %82,0 | %0,6 |
+| 😴 Uykuda | %0,1 | %62,9 | **%37,0** |
+
+> Sonuçlar segment geçişi analiziyle tutarlıdır: VIP müşteriler neredeyse tamamen düşük riskli, uykudaki müşteriler ise en riskli gruptur. Toplam 601 müşteri yüksek riskli olarak belirlenmiştir.
+
 ## 📁 Proje Yapısı
 
 ```
@@ -174,14 +196,16 @@ Veri iki döneme ayrılmıştır: **1. dönem** Aralık 2010 – Mayıs 2011 (2.
 │   ├── 05_pca_gorsellestirme.ipynb    # PCA ile boyut indirgeme ve segment görselleştirme
 │   ├── 06_segment_profilleme.ipynb    # Segment profilleri ve pazarlama önerileri
 │   ├── 07_segment_gecisi.ipynb        # İki dönem arası segment geçişleri
-│   └── 08_churn_tahmini.ipynb         # Kayıp müşteri tahmini (planlanıyor)
+│   └── 08_churn_tahmini.ipynb         # Kayıp müşteri (churn) tahmini ve deneyler
 ├── data/
 │   ├── rfm_ozgun.csv            # Özgün ölçekli RFM tablosu
 │   ├── rfm_olcekli.csv          # Ölçeklenmiş RFM tablosu
 │   ├── kume_sonuclari.csv       # Küme etiketli müşteri tablosu
 │   ├── segment_sonuclari.csv    # Segment adı eklenmiş müşteri tablosu
 │   ├── segment_gecisleri.csv    # Müşteri bazında dönemler arası segment geçişleri
-│   └── gecis_matrisi.csv        # Segment geçiş oranları (%)
+│   ├── gecis_matrisi.csv        # Segment geçiş oranları (%)
+│   ├── churn_sonuclari.csv      # Müşteri bazında churn olasılığı ve risk seviyesi
+│   └── churn_model.pkl          # Eğitilmiş Random Forest modeli (scikit-learn 1.6.1)
 ├── app/
 │   └── app.py                   # Streamlit arayüzü (geliştiriliyor)
 ├── requirements.txt
@@ -205,7 +229,7 @@ Analiz defterleri `notebooks/` klasöründedir ve Google Colab veya Jupyter ile 
 streamlit run app/app.py
 ```
 
-**Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `seaborn` · `Streamlit`
+**Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `seaborn` · `joblib` · `Streamlit`
 
 ## 📈 Proje Durumu
 
@@ -219,8 +243,8 @@ streamlit run app/app.py
 | İP6 | PCA ve görselleştirme | ✅ Tamamlandı |
 | İP7 | Segment profilleme ve strateji önerileri | ✅ Tamamlandı |
 | İP8 | Segment geçişi analizi (iki dönem karşılaştırması) | ✅ Tamamlandı |
-| İP9 | Kayıp müşteri (churn) tahmini | 🔄 Devam ediyor |
-| İP10 | Streamlit arayüzü | ⏳ Planlandı |
+| İP9 | Kayıp müşteri (churn) tahmini | ✅ Tamamlandı |
+| İP10 | Streamlit arayüzü | 🔄 Devam ediyor |
 | İP11 | Final rapor ve sunum | ⏳ Planlandı |
 
 ## 👥 Ekip
