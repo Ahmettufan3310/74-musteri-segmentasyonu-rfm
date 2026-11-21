@@ -275,21 +275,23 @@ streamlit run app/app.py
 8. Thorndike, R. L. (1953). *Who Belongs in the Family?* Psychometrika, 18(4), 267–276. (Elbow yöntemi)
 9. Rousseeuw, P. J. (1987). *Silhouettes: A Graphical Aid to the Interpretation and Validation of Cluster Analysis.* Journal of Computational and Applied Mathematics, 20, 53–65.
 10. Davies, D. L. & Bouldin, D. W. (1979). *A Cluster Separation Measure.* IEEE Transactions on Pattern Analysis and Machine Intelligence, PAMI-1(2), 224–227.
+11. Fawcett, T. (2006). *An Introduction to ROC Analysis.* Pattern Recognition Letters, 27(8), 861–874.
 
 **Boyut İndirgeme**
 
-11. Pearson, K. (1901). *On Lines and Planes of Closest Fit to Systems of Points in Space.* Philosophical Magazine, 2(11), 559–572.
-12. Jolliffe, I. T. (2002). *Principal Component Analysis* (2. baskı). New York: Springer.
+12. Pearson, K. (1901). *On Lines and Planes of Closest Fit to Systems of Points in Space.* Philosophical Magazine, 2(11), 559–572.
+13. Jolliffe, I. T. (2002). *Principal Component Analysis* (2. baskı). New York: Springer.
 
 **Tahmin Modeli**
 
-13. Breiman, L. (2001). *Random Forests.* Machine Learning, 45(1), 5–32.
+14. Breiman, L. (2001). *Random Forests.* Machine Learning, 45(1), 5–32.
+15. Cox, D. R. (1958). *The Regression Analysis of Binary Sequences.* Journal of the Royal Statistical Society: Series B, 20(2), 215–242.
 
 **Yazılım Kütüphaneleri**
 
-14. Pedregosa, F. vd. (2011). *Scikit-learn: Machine Learning in Python.* Journal of Machine Learning Research, 12, 2825–2830.
-15. McKinney, W. (2010). *Data Structures for Statistical Computing in Python.* Proc. 9th Python in Science Conference, 56–61.
-16. Hunter, J. D. (2007). *Matplotlib: A 2D Graphics Environment.* Computing in Science & Engineering, 9(3), 90–95.
+16. Pedregosa, F. vd. (2011). *Scikit-learn: Machine Learning in Python.* Journal of Machine Learning Research, 12, 2825–2830.
+17. McKinney, W. (2010). *Data Structures for Statistical Computing in Python.* Proc. 9th Python in Science Conference, 56–61.
+18. Hunter, J. D. (2007). *Matplotlib: A 2D Graphics Environment.* Computing in Science & Engineering, 9(3), 90–95.
 
 ## 📄 Lisans
 
