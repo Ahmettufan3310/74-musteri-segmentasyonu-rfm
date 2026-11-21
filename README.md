@@ -35,8 +35,8 @@ Amaç; yalnızca bir kümeleme algoritması çalıştırmak değil, verinin kura
 - **RFM Özellik Mühendisliği:** Her müşteri için Recency, Frequency ve Monetary değerlerinin hesaplanması.
 - **Çoklu Kümeleme Yaklaşımı:** K-Means (temel model) ile birlikte Hiyerarşik Kümeleme ve DBSCAN'in uygulanıp karşılaştırılması.
 - **Objektif Model Değerlendirme:** Elbow yöntemi, Silhouette Skoru ve Davies-Bouldin Endeksi ile optimum küme sayısının ve en uygun modelin belirlenmesi.
-- **Boyut İndirgeme ve Görselleştirme:** PCA ile segmentlerin 2B/3B görselleştirilmesi.
-- **Kural Tabanlı Segment Profilleme:** Kümelerin iş dünyası segmentlerine (VIP, Sadık, Riskli…) dönüştürülmesi ve pazarlama önerileri.
+- **Boyut İndirgeme ve Görselleştirme:** PCA ile segmentlerin iki boyutlu düzlemde görselleştirilmesi.
+- **Kural Tabanlı Segment Profilleme:** Kümelerin iş dünyası segmentlerine (VIP, Sadık, Yeni/Potansiyel, Uykuda) dönüştürülmesi ve pazarlama önerileri.
 - **Segment Geçişi Analizi:** Verinin iki döneme bölünerek müşterilerin segmentler arasındaki hareketinin (ör. Sadık → Uykuda) incelenmesi.
 - **Kayıp Müşteri (Churn) Tahmini:** Random Forest ile alışverişi bırakma riski yüksek müşterilerin önceden belirlenmesi.
 - **Etkileşimli Arayüz:** CSV yükleme, müşteri sorgulama (segment ve churn riski) ve sonuç indirme sunan Streamlit paneli.
@@ -207,7 +207,7 @@ Eğitilen model tüm müşterilere uygulanarak her müşteriye churn olasılığ
 │   ├── churn_sonuclari.csv      # Müşteri bazında churn olasılığı ve risk seviyesi
 │   └── churn_model.pkl          # Eğitilmiş Random Forest modeli (scikit-learn 1.6.1)
 ├── app/
-│   └── app.py                   # Streamlit arayüzü (geliştiriliyor)
+│   └── app.py                   # Streamlit arayüzü (İP10'da eklenecek)
 ├── requirements.txt
 └── README.md
 ```
@@ -229,7 +229,7 @@ Analiz defterleri `notebooks/` klasöründedir ve Google Colab veya Jupyter ile 
 streamlit run app/app.py
 ```
 
-**Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `seaborn` · `joblib` · `Streamlit`
+**Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `joblib` · `Streamlit`
 
 ## 📈 Proje Durumu
 
