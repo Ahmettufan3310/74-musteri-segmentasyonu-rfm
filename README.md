@@ -102,7 +102,7 @@ Uygun küme sayısı, k=2 ile k=10 arasında **Elbow yöntemi** ve **Silhouette 
 
 **Model metrikleri:** Silhouette Skoru **0,337** · Davies-Bouldin Endeksi **1,012** (düşük değer daha iyi ayrışma gösterir).
 
-| Segment | Recency (gün) | Frequency | Monetary (TL) | Müşteri Sayısı |
+| Segment | Recency (gün) | Frequency | Monetary (£) | Müşteri Sayısı |
 |---------|:-------------:|:---------:|:-------------:|:--------------:|
 | 🏆 Şampiyonlar / VIP | 8 | 10 | 3.623,5 | 714 |
 | 💙 Sadık / Düzenli Müşteriler | 54 | 4 | 1.320,2 | 1.187 |
