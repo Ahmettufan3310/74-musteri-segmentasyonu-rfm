@@ -1,0 +1,28 @@
+[theme]
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
+headingFont = "Inter, sans-serif"
+headingFontWeights = 700
+baseRadius = "medium"
+showSidebarBorder = true
+
+[theme.light]
+primaryColor = "#4f46e5"
+backgroundColor = "#f5f6fa"
+secondaryBackgroundColor = "#eceef5"
+textColor = "#1f2330"
+borderColor = "#e2e5ee"
+
+[theme.light.sidebar]
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f1f2f8"
+
+[theme.dark]
+primaryColor = "#818cf8"
+backgroundColor = "#0f1219"
+secondaryBackgroundColor = "#1c212d"
+textColor = "#e6e8ef"
+borderColor = "#2a3040"
+
+[theme.dark.sidebar]
+backgroundColor = "#141822"
+secondaryBackgroundColor = "#1c212d"
