@@ -8,6 +8,8 @@
 
 Bu sistem; e-ticaret ve perakende işlem kayıtlarını analiz ederek müşterileri satın alma davranışlarına göre otomatik segmentlere ayıran, her segment için pazarlama stratejisi öneren **uçtan uca bir makine öğrenmesi karar destek sistemidir**. Kullanıcı bir CSV dosyası yükler; sistem veriyi temizler, RFM özelliklerini çıkarır, müşterileri kümeler ve sonuçları etkileşimli bir panelde sunar.
 
+**🌐 Canlı Uygulama:** [musteri-segmentasyonu-74.streamlit.app](https://musteri-segmentasyonu-74.streamlit.app)
+
 ## 📑 İçindekiler
 
 - [Proje Hakkında](#-proje-hakkında)
@@ -205,9 +207,12 @@ Eğitilen model tüm müşterilere uygulanarak her müşteriye churn olasılığ
 │   ├── segment_gecisleri.csv    # Müşteri bazında dönemler arası segment geçişleri
 │   ├── gecis_matrisi.csv        # Segment geçiş oranları (%)
 │   ├── churn_sonuclari.csv      # Müşteri bazında churn olasılığı ve risk seviyesi
-│   └── churn_model.pkl          # Eğitilmiş Random Forest modeli (scikit-learn 1.6.1)
+│   ├── churn_model.pkl          # Eğitilmiş Random Forest modeli (scikit-learn 1.6.1)
+│   └── ornek_islemler.csv       # Arayüzde denemek için örnek işlem dosyası
 ├── app/
-│   └── app.py                   # Streamlit arayüzü (İP10'da eklenecek)
+│   └── app.py                   # Streamlit arayüzü
+├── .streamlit/
+│   └── config.toml              # Arayüz teması
 ├── requirements.txt
 └── README.md
 ```
@@ -223,13 +228,17 @@ cd 74-musteri-segmentasyonu-rfm
 pip install -r requirements.txt
 ```
 
-Analiz defterleri `notebooks/` klasöründedir ve Google Colab veya Jupyter ile çalıştırılabilir. Streamlit arayüzü tamamlandığında:
+Analiz defterleri `notebooks/` klasöründedir ve Google Colab veya Jupyter ile çalıştırılabilir. Streamlit arayüzünü yerelde çalıştırmak için:
 
 ```bash
 streamlit run app/app.py
 ```
 
-**Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `joblib` · `Streamlit`
+Arayüz ayrıca Streamlit Community Cloud üzerinde yayındadır: **[musteri-segmentasyonu-74.streamlit.app](https://musteri-segmentasyonu-74.streamlit.app)** (Python 3.12). Uygulama bir süre kullanılmazsa uyku moduna geçer; açılışta "wake up" düğmesine basmak yeterlidir.
+
+**Arayüz sayfaları:** Genel Bakış · Segmentler · Segment Geçişi · Churn Riski · Öncelikli Müşteriler · Müşteri Sorgula · Yeni Veri Analizi · Yöntem
+
+**Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `joblib` · `Streamlit` · `Plotly`
 
 ## 📈 Proje Durumu
 
@@ -244,15 +253,15 @@ streamlit run app/app.py
 | İP7 | Segment profilleme ve strateji önerileri | ✅ Tamamlandı |
 | İP8 | Segment geçişi analizi (iki dönem karşılaştırması) | ✅ Tamamlandı |
 | İP9 | Kayıp müşteri (churn) tahmini | ✅ Tamamlandı |
-| İP10 | Streamlit arayüzü | 🔄 Devam ediyor |
-| İP11 | Final rapor ve sunum | ⏳ Planlandı |
+| İP10 | Streamlit arayüzü | ✅ Tamamlandı |
+| İP11 | Final rapor ve sunum | 🔄 Devam ediyor |
 
 ## 👥 Ekip
 
 | Üye | Sorumluluk Alanı |
 |-----|------------------|
-| **Ahmet Furkan Tufan** | K-Means modeli, segment profilleme, Streamlit arayüzü |
-| **Mehmetali Murt** | Veri temini, veri temizleme, alternatif kümeleme modelleri, churn tahmini |
+| **Ahmet Furkan Tufan** | K-Means modeli, segment profilleme |
+| **Mehmetali Murt** | Veri temini, veri temizleme, alternatif kümeleme modelleri, churn tahmini, Streamlit arayüzü |
 | **Muhammed Yılmaz** | RFM ve ön işleme, PCA görselleştirme, segment geçişi analizi |
 
 ## 📚 Kaynaklar
