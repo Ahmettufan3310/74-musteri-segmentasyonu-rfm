@@ -260,7 +260,7 @@ Arayüz ayrıca Streamlit Community Cloud üzerinde yayındadır: **[musteri-seg
 
 | Üye | Sorumluluk Alanı |
 |-----|------------------|
-| **Ahmet Furkan Tufan** | K-Means modeli, segment profilleme |
+| **Ahmet Furkan Tufan** | K-Means modeli, segment profilleme, Streamlit arayüzü |
 | **Mehmetali Murt** | Veri temini, veri temizleme, alternatif kümeleme modelleri, churn tahmini, Streamlit arayüzü |
 | **Muhammed Yılmaz** | RFM ve ön işleme, PCA görselleştirme, segment geçişi analizi |
 
