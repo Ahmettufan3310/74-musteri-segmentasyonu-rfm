@@ -301,6 +301,9 @@ Arayüz ayrıca Streamlit Community Cloud üzerinde yayındadır: **[musteri-seg
 16. Pedregosa, F. vd. (2011). *Scikit-learn: Machine Learning in Python.* Journal of Machine Learning Research, 12, 2825–2830.
 17. McKinney, W. (2010). *Data Structures for Statistical Computing in Python.* Proc. 9th Python in Science Conference, 56–61.
 18. Hunter, J. D. (2007). *Matplotlib: A 2D Graphics Environment.* Computing in Science & Engineering, 9(3), 90–95.
+19. Plotly Technologies Inc. (2015). *Collaborative Data Science.* Montréal, QC: Plotly Technologies Inc. https://plot.ly
+20. Streamlit Inc. (2019). *Streamlit: A Faster Way to Build and Share Data Apps* [Yazılım]. https://streamlit.io
+21. Joblib Development Team. *Joblib: Running Python Functions as Pipeline Jobs* [Yazılım]. https://joblib.readthedocs.io
 
 ## 📄 Lisans
 
