@@ -169,7 +169,7 @@ Veri iki döneme ayrılmıştır: **1. dönem** Aralık 2010 – Mayıs 2011 (2.
 
 **Kayıp Müşteri (Churn) Tahmini**
 
-Veri 9 Eylül 2011 tarihinden ikiye ayrılmıştır: müşteri özellikleri ilk 9 aydan çıkarılmış, son 3 ayda hiç alışveriş yapmayan müşteriler **churn** olarak etiketlenmiştir (3.359 müşterinin %43'ü). RFM değerlerine ek olarak ürün çeşitliliği, ortalama sepet tutarı ve müşteri süresi özellikleri kullanılmıştır. Veri %75 eğitim / %25 test olarak ayrılmıştır.
+Veri 9 Eylül 2011 tarihinden ikiye ayrılmıştır: müşteri özellikleri ilk 9 aydan çıkarılmış, son 3 ayda hiç alışveriş yapmayan müşteriler **churn** olarak etiketlenmiştir (3.359 müşterinin %43'ü). RFM değerlerine ek olarak ürün çeşitliliği, ortalama sepet tutarı ve müşteri süresi özellikleri kullanılmıştır. Müşteriler, churn oranı korunarak rastgele %75 eğitim (2.519 müşteri) / %25 test (840 müşteri) olarak ayrılmıştır (`stratify`, `random_state=42`). Aşağıdaki metrikler test kümesindeki 840 müşteri üzerinden hesaplanmıştır; Random Forest için karışıklık matrisi: 273 doğru yakalanan, 87 kaçırılan churn, 185 yanlış alarm, 295 doğru "devam".
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
 |-------|:--------:|:---------:|:------:|:--:|:-------:|
