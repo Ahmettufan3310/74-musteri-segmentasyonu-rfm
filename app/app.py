@@ -44,10 +44,20 @@ ONERI = {
 KISA_AKSIYON = {seg: metin.split(";")[0] + "." for seg, metin in ONERI.items()}
 
 ONCELIKLI_AKSIYON = ("Kişisel iletişim (telefon veya özel e-posta) ile ulaşın; özel indirim veya ücretsiz kargo "
-                     "teklifiyle elde tutmaya çalışın. Beklenen kaybı en yüksek olanlardan başlayın.")
+                     "teklifiyle elde tutmaya çalışın. Risk ağırlıklı harcaması en yüksek olanlardan başlayın.")
+
+SON_VERI_TARIHI = "9 Aralık 2011"
+KALIBRASYON_NOTU = (":material/info: Churn risk puanları müşterileri risk sırasına koymak içindir; kalibre edilmiş "
+                    "kesin olasılıklar değildir. Örneğin 0,80 (%80) puan \"bu müşterilerin %80'i ayrılır\" anlamına "
+                    "gelmez, yalnızca müşterinin diğerlerinden daha riskli olduğunu gösterir.")
+GECERLILIK_NOTU = (":material/history: Model, 9 Eylül 2011 öncesi alışverişlerden çıkarılan özelliklerle eğitildi ve "
+                   "sonraki 90 günde müşterilerin yeniden alışveriş yapıp yapmadığına göre değerlendirildi. Ekrandaki "
+                   f"puanlar ise tüm müşterilere son veri tarihine ({SON_VERI_TARIHI}) göre verildi; bu güncel puanlar, "
+                   "sonrasına ait veri olmadığı için ileriye dönük olarak ayrıca doğrulanmadı.")
 
 GEREKLI_SUTUNLAR = ["InvoiceNo", "StockCode", "Description", "Quantity",
                     "InvoiceDate", "UnitPrice", "CustomerID", "Country"]
+SAYISAL_SUTUNLAR = ["Quantity", "UnitPrice", "CustomerID"]
 URUN_DISI = ["POST", "M", "C2", "DOT", "BANK CHARGES", "PADS"]
 HATALI = [("581483", "23843"), ("541431", "23166"), ("540815", "21108"), ("556444", "22502")]
 
@@ -220,7 +230,7 @@ def renk_saydam(hex_renk, saydamlik=0.4):
 
 
 def segment_ozeti(musteriler):
-    """Segment başına müşteri sayısı, ciro, ortalama churn olasılığı, oran ve ciro payı."""
+    """Segment başına müşteri sayısı, ciro, ortalama churn risk puanı, oran ve ciro payı."""
     ozet = musteriler.groupby("Segment").agg(
         Musteri=("CustomerID", "count"), Ciro=("Monetary", "sum"), Risk=("ChurnOlasiligi", "mean"),
     ).reindex(SEGMENTLER)
@@ -233,9 +243,9 @@ def oncelikli_musteriler(musteriler):
     """Harcaması üst %25'te olup riski Orta veya Yüksek olan müşteriler."""
     esik = musteriler["Monetary"].quantile(0.75)
     secim = musteriler[(musteriler["Monetary"] >= esik) & musteriler["Risk"].isin(["Orta", "Yüksek"])].copy()
-    secim["BeklenenKayip"] = (secim["Monetary"] * secim["ChurnOlasiligi"]).round(2)
+    secim["RiskAgirlikliHarcama"] = (secim["Monetary"] * secim["ChurnOlasiligi"]).round(2)
     secim["Oneri"] = ONCELIKLI_AKSIYON
-    return secim.sort_values("BeklenenKayip", ascending=False), esik
+    return secim.sort_values("RiskAgirlikliHarcama", ascending=False), esik
 
 
 # ---------------- Veri ve modellerin yüklenmesi ----------------
@@ -345,12 +355,62 @@ def csv_oku(dosya):
         return pd.read_csv(dosya, dtype=tipler, encoding="latin-1")
 
 
+def dosyayi_hazirla(dosya):
+    """Yüklenen CSV'yi okur ve kontrol eder. (veri, hata, uyarılar) döndürür; hata varsa veri None olur."""
+    try:
+        df = csv_oku(dosya)
+    except pd.errors.EmptyDataError:
+        return None, "Dosya boş: içinde hiç satır veya sütun yok.", []
+    except pd.errors.ParserError:
+        return None, "Dosya CSV olarak okunamadı. Sütunların virgülle ayrıldığından emin olun.", []
+    if df.empty:
+        return None, "Dosyada başlık satırı var ama hiç veri satırı yok.", []
+
+    eksik = [s for s in GEREKLI_SUTUNLAR if s not in df.columns]
+    if eksik:
+        return None, "Dosyada şu sütunlar eksik: " + ", ".join(eksik) + ".", []
+
+    # Sayısal sütunlarda sayı olmayan değer varsa durdur
+    for sutun in SAYISAL_SUTUNLAR:
+        sayisal = pd.to_numeric(df[sutun], errors="coerce")
+        hatali = df[sutun].notna() & sayisal.isna()
+        if hatali.any():
+            ornek = df.loc[hatali, sutun].iloc[0]
+            return None, (f"'{sutun}' sütununda sayı olmayan {sayi(hatali.sum())} değer var (ör. '{ornek}'). "
+                          "Bu sütunda yalnızca sayı olmalı ve ondalık ayırıcı nokta olmalı (ör. 2.55)."), []
+        df[sutun] = sayisal
+
+    tarih = pd.to_datetime(df["InvoiceDate"], errors="coerce")
+    if tarih.isna().all():
+        return None, ("InvoiceDate sütunundaki tarihler okunamadı. Beklenen biçim: 2011-12-09 12:50 "
+                      "veya 12/9/2011 12:50 (ay/gün/yıl)."), []
+    uyarilar = []
+    bozuk = df["InvoiceDate"].notna() & tarih.isna()
+    if bozuk.any():
+        uyarilar.append(f"{sayi(bozuk.sum())} satırın tarihi okunamadı; bu satırlar analizden çıkarıldı.")
+    df["InvoiceDate"] = tarih
+    return df.dropna(subset=["InvoiceDate"]), None, uyarilar
+
+
+def kapsam_uyarilari(sonuc):
+    """Yüklenen veri, modellerin eğitildiği veriden çok farklıysa uyarı metinleri döndürür."""
+    uyarilar = []
+    gun = sonuc["IlkAlisveris"].max()  # en eski alışverişten referans tarihe kadar geçen gün
+    if gun < 270 or gun > 456:
+        uyarilar.append(f"Verideki alışverişler yaklaşık <b>{sayi(gun / 30.4)} aylık</b> bir dönemi kapsıyor; modeller "
+                        "yaklaşık 12 aylık veriyle eğitildi. Sipariş sayısı ve harcama bu yüzden farklı ölçekte olabilir.")
+    if len(sonuc) < 50:
+        uyarilar.append(f"Yalnızca <b>{sayi(len(sonuc))} müşteri</b> var; bu kadar az müşteriyle dağılımlar ve oranlar "
+                        "güvenilir değildir.")
+    return uyarilar
+
+
 # ---------------- Sayfalar ----------------
 
 def genel_bakis(musteriler, gecis):
     baslik_bandi("Genel Bakış",
                  "Bu panel, bir çevrimiçi mağazanın bir yıllık satış kayıtlarını inceleyerek müşterileri alışveriş "
-                 "davranışlarına göre 4 segmente ayırır. Her segmentin ciroya katkısını, alışverişi bırakma riskini "
+                 "davranışlarına göre 4 segmente ayırır. Her segmentin ciroya katkısını, churn risk puanını "
                  "ve önerilen pazarlama aksiyonunu tek ekranda gösterir.")
     with st.expander("Nasıl kullanılır?", icon=":material/help:"):
         st.markdown("""
@@ -358,7 +418,7 @@ def genel_bakis(musteriler, gecis):
 2. **Segmentler:** Her segmentin tipik (medyan) alışveriş davranışı ve pazarlama önerisi.
 3. **Segment Geçişi:** Müşterilerin iki dönem arasında hangi segmente geçtiği.
 4. **Churn Riski:** Alışverişi bırakma riskine göre müşteri listesi (filtrelenebilir, indirilebilir).
-5. **Öncelikli Müşteriler:** Çok harcayan ama kaybedilme riski olan müşteriler; ilk ulaşılması gerekenler.
+5. **Öncelikli Müşteriler:** Çok harcayan ve churn risk puanı orta veya yüksek olan müşteriler; ilk ulaşılması gerekenler.
 6. **Müşteri Sorgula:** Bir müşteri numarası girip o müşterinin profil kartını görün.
 7. **Yeni Veri Analizi:** Kendi satış dosyanızı (CSV) yükleyip aynı analizi yaptırın.
 8. **Yöntem:** Kullanılan veri, adımlar ve modeller.
@@ -372,7 +432,7 @@ def genel_bakis(musteriler, gecis):
         dict(etiket="Toplam ciro", deger=para(toplam_ciro / 1e6, 2) + " Mn", alt="Temizlenmiş satışlar"),
         dict(etiket="Müşteri başına ciro", deger=para(toplam_ciro / len(musteriler)), alt="Ortalama"),
         dict(etiket="Yüksek riskli müşteri", deger=sayi(len(yuksek)), renk=RISK_RENK["Yüksek"],
-             alt=f"Müşterilerin {yuzde(len(yuksek) / len(musteriler) * 100)} kadarı"),
+             alt=f"Risk puanı 0,7'nin üstünde ({SON_VERI_TARIHI} itibarıyla)"),
     ])
 
     ozet = segment_ozeti(musteriler)
@@ -382,22 +442,23 @@ def genel_bakis(musteriler, gecis):
     not_kutusu("Öne çıkan bulgular", [
         f"<b>VIP müşteriler</b> müşterilerin yalnızca {yuzde(vip['Oran'])} kadarı, ama cironun "
         f"<b>{yuzde(vip['CiroPayi'])}</b> kadarını sağlıyor.",
-        f"<b>{sayi(len(oncelikli))} değerli müşteri</b> (harcaması üst %25'te) orta veya yüksek risk altında; "
+        f"<b>{sayi(len(oncelikli))} değerli müşterinin</b> (harcaması üst %25'te) churn risk puanı orta veya yüksek; "
         f"toplam harcamaları {para(oncelikli['Monetary'].sum())}.",
-        f"Yüksek riskli {sayi(len(yuksek))} müşterinin <b>{sayi(yuksek_uykuda)}</b> tanesi Uykuda segmentinde.",
+        f"Risk puanı yüksek {sayi(len(yuksek))} müşterinin <b>{sayi(yuksek_uykuda)}</b> tanesi Uykuda segmentinde.",
         f"Uykudaki müşterilerin <b>{yuzde(gecis.loc['Uykuda', 'Alışveriş yok'])}</b> kadarı bir sonraki dönemde "
         f"hiç alışveriş yapmadı; geri kazanım için erken davranmak gerekir.",
     ])
 
     st.subheader("Segmentler")
-    st.caption("Önem sırasına göre. Ortalama churn riski, segmentteki müşterilerin churn olasılıklarının ortalamasıdır.")
+    st.caption(f"Önem sırasına göre. Ort. risk puanı: son veri tarihine ({SON_VERI_TARIHI}) göre hesaplanan "
+               "churn risk puanlarının segment ortalaması.")
     kolonlar = st.columns(4)
     for kolon, seg in zip(kolonlar, SEGMENTLER):
         bilgi = ozet.loc[seg]
         kolon.markdown(kart_html(
             ETIKET[seg], sayi(bilgi["Musteri"]), alt="müşteri", renk=SEGMENT_RENK[seg], serit="ust",
             satirlar=[("Müşteri oranı", yuzde(bilgi["Oran"])), ("Ciro payı", yuzde(bilgi["CiroPayi"])),
-                      ("Ort. churn riski", yuzde(bilgi["Risk"] * 100))],
+                      ("Ort. risk puanı", yuzde(bilgi["Risk"] * 100))],
             aksiyon=KISA_AKSIYON[seg], yukseklik=320), unsafe_allow_html=True)
 
     sol, sag = st.columns(2)
@@ -500,8 +561,11 @@ def gecis_sayfasi(gecis, gecisler):
 
 
 def churn_sayfasi(musteriler):
-    baslik_bandi("Churn Riski", "Random Forest modeli her müşteriye bir alışverişi bırakma olasılığı verir. "
-                                "Düşük: 0,4'ün altı · Orta: 0,4 – 0,7 · Yüksek: 0,7'nin üstü.")
+    baslik_bandi("Churn Riski", f"Random Forest modeli her müşteriye, son veri tarihine ({SON_VERI_TARIHI}) göre "
+                                "hesaplanan bir churn risk puanı (0–1) verir. Düşük: 0,4'ün altı · Orta: 0,4 – 0,7 · "
+                                "Yüksek: 0,7'nin üstü.")
+    st.caption(KALIBRASYON_NOTU)
+    st.caption(GECERLILIK_NOTU)
 
     sayilar = musteriler["Risk"].value_counts().reindex(RISKLER, fill_value=0)
     kart_satiri([dict(etiket=f"{risk} risk", deger=sayi(sayilar[risk]), renk=RISK_RENK[risk],
@@ -519,7 +583,7 @@ def churn_sayfasi(musteriler):
             tablo = pd.crosstab(musteriler["Segment"], musteriler["Risk"], margins=True, margins_name="Toplam")
             st.dataframe(tablo.reindex(index=SEGMENTLER + ["Toplam"], columns=RISKLER + ["Toplam"], fill_value=0),
                          width="stretch")
-    with sekme2, kutu("Müşteri listesi", "Segment ve risk seviyesine göre filtreleyin; liste churn olasılığına göre sıralıdır"):
+    with sekme2, kutu("Müşteri listesi", "Segment ve risk seviyesine göre filtreleyin; liste risk puanına göre sıralıdır"):
         f1, f2 = st.columns(2)
         secili_segment = f1.multiselect("Segment", SEGMENTLER, default=SEGMENTLER)
         secili_risk = f2.multiselect("Risk seviyesi", RISKLER, default=["Yüksek"])
@@ -533,31 +597,32 @@ def churn_sayfasi(musteriler):
 
 
 def oncelikli_sayfasi(musteriler):
-    baslik_bandi("Öncelikli Müşteriler", "Şirkete çok kazandıran ama kaybedilme riski taşıyan müşteriler: "
-                                         "ilk ulaşılması gereken kişiler.")
+    baslik_bandi("Öncelikli Müşteriler", "Şirkete çok kazandıran ve churn risk puanı orta veya yüksek olan "
+                                         "müşteriler: ilk ulaşılması gereken kişiler.")
     secim, esik = oncelikli_musteriler(musteriler)
 
     not_kutusu("Ölçüt", [
         f"Toplam harcaması müşterilerin <b>en yüksek %25'inde</b> olan (Monetary ≥ <b>{para(esik, 2)}</b>) "
-        "<b>ve</b> churn riski <b>Orta</b> veya <b>Yüksek</b> olan müşteriler. <b>Beklenen kayıp</b> = Monetary × "
-        "churn olasılığı; geçmiş harcamaya dayanan kaba bir önem ölçüsüdür ve listeyi sıralamak için kullanılır."])
+        f"<b>ve</b> son veri tarihine ({SON_VERI_TARIHI}) göre hesaplanan churn risk puanı <b>Orta</b> veya "
+        "<b>Yüksek</b> olan müşteriler. <b>Risk ağırlıklı harcama</b> = Monetary × risk puanı; geçmiş harcamaya "
+        "dayanan kaba bir önem ölçüsüdür, kesin bir kayıp tahmini değildir ve listeyi sıralamak için kullanılır."])
 
     kart_satiri([
         dict(etiket="Öncelikli müşteri", deger=sayi(len(secim)), alt="Ölçüte uyan müşteriler"),
         dict(etiket="Toplam harcamaları", deger=para(secim["Monetary"].sum()), alt="Geçmiş bir yıl"),
         dict(etiket="Ciro içindeki payı", deger=yuzde(secim["Monetary"].sum() / musteriler["Monetary"].sum() * 100),
              alt="Toplam ciroya göre"),
-        dict(etiket="Toplam beklenen kayıp", deger=para(secim["BeklenenKayip"].sum()), renk=RISK_RENK["Yüksek"],
-             alt="Harcama × churn olasılığı"),
+        dict(etiket="Risk ağırlıklı harcama", deger=para(secim["RiskAgirlikliHarcama"].sum()),
+             renk=RISK_RENK["Yüksek"], alt="Harcama × risk puanı"),
     ])
     not_kutusu("Önerilen aksiyon", [ONCELIKLI_AKSIYON], renk=RISK_RENK["Düşük"])
 
     sol, sag = st.columns([2, 3])
     with sol, kutu("Segmentlere göre dağılım"):
         dagilim_grafigi(secim["Segment"], SEGMENTLER, SEGMENT_RENK, 390)
-    with sag, kutu("Öncelikli müşteri listesi", "Beklenen kayba göre sıralı"):
+    with sag, kutu("Öncelikli müşteri listesi", "Risk ağırlıklı harcamaya göre sıralı"):
         liste = secim[["CustomerID", "Segment", "Risk", "ChurnOlasiligi", "Recency", "Frequency",
-                       "Monetary", "BeklenenKayip", "Oneri"]]
+                       "Monetary", "RiskAgirlikliHarcama", "Oneri"]]
         liste = liste.assign(CustomerID=liste["CustomerID"].astype(int))
         st.dataframe(liste, hide_index=True, width="stretch", height=330)
         csv_indir(liste, "oncelikli_musteriler.csv", "Öncelikli müşterileri CSV olarak indir")
@@ -603,8 +668,10 @@ def sorgu_sayfasi(musteriler):
     bosluk()
 
     sol, sag = st.columns([2, 3])
-    with sol, kutu("Churn olasılığı", "Yeşil: düşük · sarı: orta · kırmızı: yüksek risk"):
+    with sol, kutu("Churn risk puanı", f"Son veri tarihine ({SON_VERI_TARIHI}) göre · yeşil: düşük · "
+                                       "sarı: orta · kırmızı: yüksek"):
         risk_gostergesi(secilen["ChurnOlasiligi"])
+        st.caption(KALIBRASYON_NOTU)
     with sag, kutu("Tüm müşterilere göre konumu"):
         # Değerin tüm müşteriler içindeki konumu
         konumlar = [
@@ -629,25 +696,47 @@ def sorgu_sayfasi(musteriler):
 
 def yeni_veri_sayfasi():
     baslik_bandi("Yeni Veri Analizi", "Online Retail formatındaki kendi satış dosyanızı yükleyin; uygulama veriyi "
-                                      "temizler, müşterileri segmentlere ayırır ve churn riskini hesaplar.")
+                                      "temizler, müşterileri segmentlere ayırır ve churn risk puanını hesaplar.")
 
-    with kutu("Dosya yükle", "Gerekli sütunlar: " + ", ".join(GEREKLI_SUTUNLAR)):
+    not_kutusu("Yüklemeden önce okuyun", [
+        "Modeller <b>UCI Online Retail</b> verisiyle eğitildi: İngiltere'deki bir çevrimiçi perakendecinin "
+        "<b>Aralık 2010 – Aralık 2011</b> satışları, tutarlar <b>sterlin (£)</b>.",
+        "Farklı bir dönemin, sektörün veya para biriminin verilerinde segmentler ve churn riskleri yanıltıcı olabilir. "
+        "En anlamlı sonuç, yaklaşık 12 aylık ve benzer yapıdaki perakende verileriyle alınır.",
+    ], renk=RISK_RENK["Orta"])
+
+    with kutu("Beklenen dosya biçimi", "Virgülle ayrılmış CSV; ilk satır sütun adları"):
+        st.markdown("""
+| Sütun | İçerik | Örnek |
+|---|---|---|
+| `InvoiceNo` | Fatura numarası; iptaller "C" ile başlar | 536365 |
+| `StockCode` | Ürün kodu | 85123A |
+| `Description` | Ürün adı | WHITE HANGING HEART |
+| `Quantity` | Adet (tam sayı) | 6 |
+| `InvoiceDate` | Tarih ve saat: **yıl-ay-gün** ya da **ay/gün/yıl** | 2011-12-09 12:50 veya 12/9/2011 12:50 |
+| `UnitPrice` | Birim fiyat (£); ondalık ayırıcı nokta | 2.55 |
+| `CustomerID` | Müşteri numarası (sayı) | 17850 |
+| `Country` | Ülke | United Kingdom |
+""")
+        st.caption("Gün.ay.yıl biçimindeki tarihler (ör. 09.12.2011) ay/gün olarak yanlış okunabilir.")
+    bosluk()
+
+    with kutu("Dosya yükle"):
         ornek = VERI / "ornek_islemler.csv"
         if ornek.exists():
             st.download_button("Örnek dosyayı indir", ornek.read_bytes(), file_name="ornek_islemler.csv",
                                mime="text/csv", icon=":material/description:")
         dosya = st.file_uploader("CSV dosyası seçin", type="csv")
+        st.caption(":material/lock: Gizlilik: Dosya, işlenmek için uygulamanın çalıştığı sunucuya gönderilir ama diske "
+                   "kaydedilmez. Yalnızca sizin oturumunuzun belleğinde tutulur; dosyayı kaldırdığınızda veya oturum "
+                   "kapandığında silinir. Diğer kullanıcılar dosyanızı göremez.")
     if dosya is None:
         return
 
-    df = csv_oku(dosya)
-    eksik = [s for s in GEREKLI_SUTUNLAR if s not in df.columns]
-    if eksik:
-        st.error("Dosyada şu sütunlar eksik: " + ", ".join(eksik))
+    df, hata, uyarilar = dosyayi_hazirla(dosya)
+    if hata:
+        st.error(hata, icon=":material/error:")
         return
-
-    df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"], errors="coerce")
-    df = df.dropna(subset=["InvoiceDate"])
 
     with st.spinner("Veri temizleniyor ve müşteriler analiz ediliyor..."):
         sonuc, rapor = yeni_veriyi_analiz_et(df)
@@ -658,11 +747,14 @@ def yeni_veri_sayfasi():
         return
 
     bosluk()
+    uyarilar += kapsam_uyarilari(sonuc)
+    if uyarilar:
+        not_kutusu("Sonuçları dikkatli yorumlayın", uyarilar, renk=RISK_RENK["Yüksek"])
     kart_satiri([
         dict(etiket="Müşteri sayısı", deger=sayi(len(sonuc)), alt=f"{sayi(rapor['Kalan Satır'].iloc[-1])} temiz satırdan"),
         dict(etiket="Toplam ciro", deger=para(sonuc["Monetary"].sum()), alt="Temizlenmiş satışlar"),
         dict(etiket="Yüksek riskli müşteri", deger=sayi((sonuc["Risk"] == "Yüksek").sum()), renk=RISK_RENK["Yüksek"],
-             alt="Churn olasılığı 0,7'nin üstünde"),
+             alt="Risk puanı 0,7'nin üstünde"),
     ])
 
     sekme1, sekme2, sekme3 = st.tabs(["Özet", "Veri temizleme", "Müşteri sonuçları"])
@@ -737,8 +829,29 @@ geçen gün, ürün çeşidi ve ortalama sepet. Veri %75 eğitim / %25 test olar
 | Lojistik Regresyon | 0,670 | 0,587 | 0,778 | 0,669 | 0,735 |
 | **Random Forest** (max_depth=5) | **0,676** | 0,596 | 0,758 | 0,667 | **0,744** |
 
-Model tüm müşterilere uygulanarak risk seviyesi atandı: Düşük (< 0,4), Orta (0,4–0,7), Yüksek (> 0,7).
-En etkili özellikler sırasıyla Frequency, Monetary ve Recency'dir.
+**Çapraz doğrulama:** Model seçimi test verisine bakılarak yapılmasın diye, yalnızca eğitim verisinde
+5 katlı çapraz doğrulama uygulandı (ROC-AUC, ortalama ± standart sapma).
+
+| Model | Çapraz doğrulama ROC-AUC | Test ROC-AUC |
+|---|:---:|:---:|
+| **Random Forest** (max_depth=5) | **0,745 ± 0,017** | **0,744** |
+| Random Forest (max_depth=3) | 0,747 ± 0,013 | 0,744 |
+| Lojistik Regresyon | 0,747 ± 0,014 | 0,735 |
+
+max_depth=3 ile 5 arasındaki fark standart sapmanın çok altında, yani anlamsızdır; bu yüzden max_depth=5 korundu.
+Çapraz doğrulama (0,745) ile test skorunun (0,744) neredeyse aynı olması, test sonucunun şansa bağlı olmadığını
+gösterir. Lojistik Regresyon da benzer başarıdadır; Random Forest, özellik önemlerini yorumlamaya imkân verdiği
+için tercih edildi.
+
+Model, tüm müşterilere son veri tarihine (9 Aralık 2011) göre hesaplanan özelliklerle uygulanarak her müşteriye
+bir **churn risk puanı** ve risk seviyesi verildi: Düşük (< 0,4), Orta (0,4–0,7), Yüksek (> 0,7).
+
+**Geçerlilik notu:** Model 9 Eylül 2011 öncesi özelliklerle eğitildi ve sonraki 90 gün üzerinde değerlendirildi
+(yukarıdaki test sonuçları). Tüm müşterilere verilen güncel puanlar ise 9 Aralık 2011 sonrasına ait veri olmadığı
+için ileriye dönük olarak ayrıca doğrulanmadı; bu puanlar kesin tahmin değil, risk sıralaması olarak okunmalıdır.
+En etkili özellikler sırasıyla Frequency, Monetary ve Recency'dir. Model dengeli sınıf ağırlığıyla
+(`class_weight='balanced'`) eğitildiği için puanlar müşterileri sıralamak içindir; kalibre edilmiş kesin olasılıklar
+değildir.
 """)
 
 

@@ -20,6 +20,7 @@ Bu sistem; e-ticaret ve perakende işlem kayıtlarını analiz ederek müşteril
 - [Kümeleme Sonuçları](#-kümeleme-sonuçları)
 - [Proje Yapısı](#-proje-yapısı)
 - [Kurulum ve Çalıştırma](#-kurulum-ve-çalıştırma)
+- [Sınırlılıklar ve Gelecek Çalışmalar](#-sınırlılıklar-ve-gelecek-çalışmalar)
 - [Proje Durumu](#-proje-durumu)
 - [Ekip](#-ekip)
 - [Kaynaklar](#-kaynaklar)
@@ -124,6 +125,8 @@ Aynı RFM tablosu üzerinde üç kümeleme algoritması uygulanıp Silhouette ve
 | DBSCAN | 2 | 0,296 | 1,062 |
 
 > DBSCAN'in yalnızca iki geniş küme üretmesi, RFM verisinin keskin yoğunluk sınırları içermeyen sürekli yapısından kaynaklanmaktadır.
+>
+> **Not:** DBSCAN'in Silhouette ve Davies-Bouldin skorları, gürültü olarak etiketlenen 75 müşteri (%1,7) hariç tutularak hesaplanmıştır. K-Means ve Hiyerarşik Kümeleme skorları ise tüm 4.333 müşteri üzerinden hesaplandığından, DBSCAN ile karşılaştırma tam olarak aynı veri kümesi üzerinde yapılmamıştır.
 
 **Görselleştirme (PCA)**
 
@@ -173,9 +176,22 @@ Veri 9 Eylül 2011 tarihinden ikiye ayrılmıştır: müşteri özellikleri ilk 
 | Lojistik Regresyon | 0,670 | 0,587 | 0,778 | 0,669 | 0,735 |
 | **Random Forest** (max_depth=5) | **0,676** | 0,596 | 0,758 | 0,667 | **0,744** |
 
-Yapılan deneylerde 60, 90 ve 120 günlük churn tanımları karşılaştırılmış (ROC-AUC 0,731–0,752) ve işletme açısından dengeli olan **90 gün** seçilmiştir. Ağaç derinliği denemesinde derinlik arttıkça eğitim doğruluğu %100'e çıkarken test doğruluğu artmamış (aşırı öğrenme); en iyi sonuç **max_depth=5** ile alınmıştır. Modelde en etkili özellikler sırasıyla Frequency, Monetary ve Recency'dir.
+**Duyarlılık analizi:** 60, 90 ve 120 günlük churn tanımları denenmiş; ROC-AUC 0,731–0,752 aralığında kalmış, yani sonuç seçilen pencereye fazla duyarlı değildir. 60 gün düzenli ama seyrek alışveriş yapan müşterileri de kayıp saydığı, 120 gün ise kaybı geç fark ettirdiği için işletme açısından dengeli olan **90 gün** kullanılmıştır.
 
-Eğitilen model tüm müşterilere uygulanarak her müşteriye churn olasılığı ve risk seviyesi atanmıştır:
+**Model ayarı ve çapraz doğrulama:** Ağaç derinliği, test verisine dokunmadan yalnızca eğitim verisi üzerinde **5 katlı çapraz doğrulama** ile değerlendirilmiştir:
+
+| Model | CV ROC-AUC (ort. ± std) |
+|-------|:-----------------------:|
+| Random Forest, max_depth=3 | 0,747 ± 0,013 |
+| **Random Forest, max_depth=5** | **0,745 ± 0,017** |
+| Random Forest, max_depth=8 | 0,740 ± 0,020 |
+| Random Forest, max_depth=12 | 0,729 ± 0,019 |
+| Random Forest, sınırsız | 0,719 ± 0,021 |
+| Lojistik Regresyon | 0,747 ± 0,014 |
+
+Derinlik arttıkça skor düşmekte, bu da aşırı öğrenmeyi göstermektedir. max_depth=3 ile 5 arasındaki fark standart sapmanın çok altında olduğundan iki değer pratikte eşdeğerdir; max_depth=5 korunmuştur. Çapraz doğrulama skoru (0,745) ile test skorunun (0,744) neredeyse aynı olması, test sonucunun şansa bağlı olmadığını göstermektedir. Lojistik Regresyon da benzer başarıya ulaşmış; Random Forest, özellik önemlerini yorumlamaya imkân verdiği için tercih edilmiştir. Modelde en etkili özellikler sırasıyla Frequency, Monetary ve Recency'dir.
+
+Eğitilen model, son veri tarihine (9 Aralık 2011) göre hesaplanan güncel özelliklerle tüm müşterilere uygulanmış ve her müşteriye bir **churn risk puanı** ile risk seviyesi (Düşük < 0,4 ≤ Orta < 0,7 ≤ Yüksek) atanmıştır. Bu puanlar müşterileri risk sırasına koymak içindir; kalibre edilmiş kesin olasılıklar değildir ve ileriye dönük olarak ayrıca doğrulanmamıştır.
 
 | Segment | Düşük Risk | Orta Risk | Yüksek Risk |
 |---------|:----------:|:---------:|:-----------:|
@@ -184,7 +200,7 @@ Eğitilen model tüm müşterilere uygulanarak her müşteriye churn olasılığ
 | 🌱 Yeni / Potansiyel | %17,4 | %82,0 | %0,6 |
 | 😴 Uykuda | %0,1 | %62,9 | **%37,0** |
 
-> Sonuçlar segment geçişi analiziyle tutarlıdır: VIP müşteriler neredeyse tamamen düşük riskli, uykudaki müşteriler ise en riskli gruptur. Toplam 601 müşteri yüksek riskli olarak belirlenmiştir.
+> Sonuçlar segment geçişi analiziyle tutarlıdır: VIP müşteriler neredeyse tamamen düşük riskli, uykudaki müşteriler ise en riskli gruptur. Toplam 601 müşterinin risk puanı yüksektir ve bunların 590'ı Uykuda segmentindedir.
 
 ## 📁 Proje Yapısı
 
@@ -228,7 +244,15 @@ cd 74-musteri-segmentasyonu-rfm
 pip install -r requirements.txt
 ```
 
-Analiz defterleri `notebooks/` klasöründedir ve Google Colab veya Jupyter ile çalıştırılabilir. Streamlit arayüzünü yerelde çalıştırmak için:
+Analiz defterleri `notebooks/` klasöründedir ve Google Colab veya Jupyter ile çalıştırılabilir.
+
+**Notebook çalıştırma sırası:** `01_veri_eda` → `02_rfm` → `03_kmeans` → `04_alternatif_kumeleme` → `05_pca_gorsellestirme` → `06_segment_profilleme` → `07_segment_gecisi` → `08_churn_tahmini`
+
+- Ham veri depoya eklenmemiştir; notebook'lar UCI Online Retail verisini `ucimlrepo` ile indirir, bu nedenle **internet bağlantısı gerekir**.
+- 03 ve sonraki notebook'lar, önceki adımların ürettiği tabloları GitHub üzerindeki `data/` klasöründen okur.
+- Notebook'lar ürettikleri CSV ve model dosyalarını çalıştıkları klasöre kaydeder. Bu dosyalar **elle `data/` klasörüne taşınmıştır**; notebook'ları yeniden çalıştıran biri, oluşan dosyaları `data/` klasörüne kopyalamalıdır. Dosyaların hangi notebook'tan üretildiği [`data/README.md`](data/README.md) içinde listelenmiştir.
+
+Streamlit arayüzünü yerelde çalıştırmak için (Python 3.12 önerilir; `requirements.txt` sürümleri sabitlenmiştir):
 
 ```bash
 streamlit run app/app.py
@@ -239,6 +263,16 @@ Arayüz ayrıca Streamlit Community Cloud üzerinde yayındadır: **[musteri-seg
 **Arayüz sayfaları:** Genel Bakış · Segmentler · Segment Geçişi · Churn Riski · Öncelikli Müşteriler · Müşteri Sorgula · Yeni Veri Analizi · Yöntem
 
 **Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `joblib` · `Streamlit` · `Plotly`
+
+## 🚧 Sınırlılıklar ve Gelecek Çalışmalar
+
+- **Tek veri seti, tek yıl:** Çalışma, İngiltere merkezli tek bir çevrimiçi perakendecinin bir yıllık verisine dayanmaktadır; sonuçlar farklı sektör, ülke, dönem veya para birimine doğrudan genellenemez.
+- **Churn puanlarının doğrulanması:** Model 9 Eylül 2011 öncesi verilerle eğitilip sonraki 90 günde değerlendirilmiştir. Tüm müşterilere verilen güncel puanlar için ileriye dönük bir dönem bulunmadığından bu puanlar doğrulanamamıştır. Birden fazla geçmiş kesim tarihiyle zaman bazlı (rolling) doğrulama gelecek çalışma olarak bırakılmıştır.
+- **Test verisinin kullanımı:** Model karşılaştırması ve parametre denemeleri sırasında test kümesi birden fazla kez incelenmiştir. Bu etkiyi azaltmak için parametre seçimi sonradan çapraz doğrulama ile yeniden yapılmış; çapraz doğrulama ve test skorlarının neredeyse aynı çıkması etkinin küçük olduğunu göstermektedir.
+- **Kalibrasyon ve eşikler:** Risk eşikleri (0,4 ve 0,7) yorumlamayı kolaylaştırmak için seçilmiştir; olasılıklar kalibre edilmemiştir. Kalibrasyon eğrisi, Brier skoru ve kampanya maliyet–fayda analizi gelecek çalışmalardır.
+- **Segmentlerin iş açısından doğrulanması:** Segment adları ve pazarlama önerileri medyan RFM değerlerine dayanmaktadır; gerçek kampanya sonuçlarıyla veya alan uzmanlarıyla doğrulanmamıştır. PCA grafiği görsel bir incelemedir, tek başına küme kalitesini kanıtlamaz.
+- **Yeni veriye uygulama:** Arayüzdeki "Yeni Veri Analizi" sayfası, UCI verisiyle eğitilmiş sabit modelleri kullanır; farklı yapıdaki verilerde sonuçlar yanıltıcı olabilir. Bu durumda arayüz kullanıcıyı uyarır.
+- **Tekrar üretilebilirlik:** Notebook çıktıları `data/` klasörüne elle taşınmaktadır; tüm adımları tek komutla çalıştıran bir pipeline ve otomatik testler bulunmamaktadır.
 
 ## 📈 Proje Durumu
 
