@@ -262,6 +262,8 @@ Arayüz ayrıca Streamlit Community Cloud üzerinde yayındadır: **[musteri-seg
 
 **Arayüz sayfaları:** Genel Bakış · Segmentler · Segment Geçişi · Churn Riski · Öncelikli Müşteriler · Müşteri Sorgula · Yeni Veri Analizi · Yöntem
 
+**Gizlilik:** "Yeni Veri Analizi" sayfasına yüklenen dosya, işlenmek üzere uygulamanın çalıştığı sunucuya gönderilir; uygulama tarafından diske yazılmaz, yalnızca oturum süresince bellekte tutulur ve oturum kapanınca silinir. Yayındaki sürüm Streamlit Community Cloud üzerinde barındırıldığından bu platformun kendi gizlilik ve veri saklama koşulları ayrıca geçerlidir.
+
 **Kullanılan Teknolojiler:** `Python` · `pandas` · `NumPy` · `scikit-learn` · `SciPy` · `matplotlib` · `joblib` · `Streamlit` · `Plotly`
 
 ## 🚧 Sınırlılıklar ve Gelecek Çalışmalar

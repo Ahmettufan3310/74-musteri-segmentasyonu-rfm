@@ -729,7 +729,9 @@ def yeni_veri_sayfasi():
         dosya = st.file_uploader("CSV dosyası seçin", type="csv")
         st.caption(":material/lock: Gizlilik: Dosya, işlenmek için uygulamanın çalıştığı sunucuya gönderilir ama diske "
                    "kaydedilmez. Yalnızca sizin oturumunuzun belleğinde tutulur; dosyayı kaldırdığınızda veya oturum "
-                   "kapandığında silinir. Diğer kullanıcılar dosyanızı göremez.")
+                   "kapandığında silinir. Diğer kullanıcılar dosyanızı göremez. Uygulamanın yayındaki sürümü Streamlit "
+                   "Community Cloud üzerinde barındırılır; bu platformun kendi gizlilik ve veri saklama koşulları "
+                   "ayrıca geçerlidir.")
     if dosya is None:
         return
 
